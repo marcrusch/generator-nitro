@@ -101,7 +101,7 @@ module.exports = class extends Generator {
 			defaults: this._passedInOptions.exporter || false,
 		});
 
-		this._backendOptions = ['none', 'drupal'];
+		this._backendOptions = ['no', 'drupal'];
 		this.option('backend', {
 			desc: 'your desired backend',
 			type: String,
@@ -287,7 +287,7 @@ module.exports = class extends Generator {
 				{
 					name: 'backend',
 					type: 'list',
-					message: 'What backend are you using?',
+					message: 'Would you like to specify a backend?',
 					choices: this._backendOptions,
 					default: this.options.backend,
 					store: true,
