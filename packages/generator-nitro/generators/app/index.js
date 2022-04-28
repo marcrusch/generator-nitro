@@ -9,7 +9,7 @@ const got = require('got');
 const path = require('path');
 const fs = require('fs');
 const childProcess = require('child_process');
-const findGitRoot = require('find-git-root')
+const findGitRoot = require('find-git-root');
 const glob = require('glob');
 const _ = require('lodash');
 
@@ -18,7 +18,9 @@ module.exports = class extends Generator {
 		// Calling the super constructor
 		super(args, opts);
 
-		this._pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '../../package.json'), 'utf8'));
+		this._pkg = JSON.parse(
+			fs.readFileSync(path.join(__dirname, '../../package.json'), 'utf8')
+		);
 
 		this._passedInOptions = {
 			name: this.options.name,
@@ -29,37 +31,48 @@ module.exports = class extends Generator {
 			clientTpl: this.options.clientTpl,
 			exampleCode: this.options.exampleCode,
 			exporter: this.options.exporter,
+			backend: this.options.backend,
 		};
 
 		this._git = {
 			root: false,
 			projet: false,
-		}
+		};
 
 		this.option('name', {
 			desc: 'the name of your app',
 			type: String,
-			defaults: this._passedInOptions.name || path.basename(process.cwd()),
+			defaults:
+				this._passedInOptions.name || path.basename(process.cwd()),
 		});
 		this.options.name = _.kebabCase(this.options.name);
 
 		this._templateEngineOptions = ['hbs', 'twig'];
 		this.option('templateEngine', {
-			desc: `your desired template engine [${this._templateEngineOptions.join('|')}]`,
+			desc: `your desired template engine [${this._templateEngineOptions.join(
+				'|'
+			)}]`,
 			type: String,
-			defaults: this._passedInOptions.templateEngine || this._templateEngineOptions[0],
+			defaults:
+				this._passedInOptions.templateEngine ||
+				this._templateEngineOptions[0],
 		});
 
 		this._jsCompilerOptions = ['ts', 'js'];
 		this.option('jsCompiler', {
-			desc: `your desired javascript js compiler [${this._jsCompilerOptions.join('|')}]`,
+			desc: `your desired javascript js compiler [${this._jsCompilerOptions.join(
+				'|'
+			)}]`,
 			type: String,
-			defaults: this._passedInOptions.jsCompiler || this._jsCompilerOptions[0],
+			defaults:
+				this._passedInOptions.jsCompiler || this._jsCompilerOptions[0],
 		});
 
 		this._viewExtOptions = ['hbs', 'twig'];
 		this.option('viewExt', {
-			desc: `your desired view file extension [${this._viewExtOptions.join('|')}]`,
+			desc: `your desired view file extension [${this._viewExtOptions.join(
+				'|'
+			)}]`,
 			type: String,
 			defaults: this._passedInOptions.viewExt || this._viewExtOptions[0],
 		});
@@ -88,6 +101,13 @@ module.exports = class extends Generator {
 			defaults: this._passedInOptions.exporter || false,
 		});
 
+		this._backendOptions = ['none', 'drupal'];
+		this.option('backend', {
+			desc: 'your desired backend',
+			type: String,
+			defaults: this._passedInOptions.backend || this._backendOptions[0],
+		});
+
 		this.option('skipQuestions', {
 			desc: 'use default for not specified options and skip questions',
 			type: Boolean,
@@ -110,7 +130,10 @@ module.exports = class extends Generator {
 				const relativeProjectRoot = path.relative(gitRoot, dest);
 				if (relativeGitRoot) {
 					gitPath = `${relativeGitRoot.replace(/\\/g, '/')}/`;
-					projectPath = `./${relativeProjectRoot.replace(/\\/g, '/')}`;
+					projectPath = `./${relativeProjectRoot.replace(
+						/\\/g,
+						'/'
+					)}`;
 				} else {
 					gitPath = './';
 				}
@@ -124,10 +147,16 @@ module.exports = class extends Generator {
 	}
 
 	prompting() {
-		this.log(yosay(`Welcome to the awe-inspiring ${chalk.cyan('Nitro')} generator!`));
+		this.log(
+			yosay(
+				`Welcome to the awe-inspiring ${chalk.cyan('Nitro')} generator!`
+			)
+		);
 
 		// check whether there is already a nitro application in place and we only have to update the application
-		const json = this.fs.readJSON(this.destinationPath('.yo-rc.json'), { new: true });
+		const json = this.fs.readJSON(this.destinationPath('.yo-rc.json'), {
+			new: true,
+		});
 
 		if (!json.new && json['generator-nitro']) {
 			// update existing application
@@ -152,16 +181,31 @@ module.exports = class extends Generator {
 				if (config) {
 					this.options.name = config.name || this.options.name;
 					this.options.viewExt =
-						config.viewExtension || config.templateEngine ? config.templateEngine : this.options.viewExt;
-					this.options.templateEngine = config.templateEngine || this.options.templateEngine;
-					this.options.jsCompiler = config.jsCompiler || this.options.jsCompiler;
-					this.options.themes = typeof config.themes === 'boolean' ? config.themes : this.options.themes;
+						config.viewExtension || config.templateEngine
+							? config.templateEngine
+							: this.options.viewExt;
+					this.options.templateEngine =
+						config.templateEngine || this.options.templateEngine;
+					this.options.jsCompiler =
+						config.jsCompiler || this.options.jsCompiler;
+					this.options.themes =
+						typeof config.themes === 'boolean'
+							? config.themes
+							: this.options.themes;
 					this.options.clientTpl =
-						typeof config.clientTemplates === 'boolean' ? config.clientTemplates : this.options.clientTpl;
+						typeof config.clientTemplates === 'boolean'
+							? config.clientTemplates
+							: this.options.clientTpl;
 					this.options.exampleCode =
-						typeof config.exampleCode === 'boolean' ? config.exampleCode : this.options.exampleCode;
+						typeof config.exampleCode === 'boolean'
+							? config.exampleCode
+							: this.options.exampleCode;
 					this.options.exporter =
-						typeof config.exporter === 'boolean' ? config.exporter : this.options.exporter;
+						typeof config.exporter === 'boolean'
+							? config.exporter
+							: this.options.exporter;
+					this.options.backend =
+						config.backend || this.options.backend;
 
 					this.options.name = _.kebabCase(this.options.name);
 				}
@@ -173,7 +217,8 @@ module.exports = class extends Generator {
 					name: 'name',
 					message: "What's the name of your app?",
 					default: this.options.name,
-					when: () => !this._skipQuestions && !this._passedInOptions.name,
+					when: () =>
+						!this._skipQuestions && !this._passedInOptions.name,
 				},
 				{
 					name: 'templateEngine',
@@ -182,7 +227,9 @@ module.exports = class extends Generator {
 					choices: this._templateEngineOptions,
 					default: this.options.templateEngine,
 					store: true,
-					when: () => !this._skipQuestions && !this._passedInOptions.templateEngine,
+					when: () =>
+						!this._skipQuestions &&
+						!this._passedInOptions.templateEngine,
 				},
 				{
 					name: 'jsCompiler',
@@ -191,7 +238,9 @@ module.exports = class extends Generator {
 					choices: this._jsCompilerOptions,
 					default: this.options.jsCompiler,
 					store: true,
-					when: () => !this._skipQuestions && !this._passedInOptions.jsCompiler,
+					when: () =>
+						!this._skipQuestions &&
+						!this._passedInOptions.jsCompiler,
 				},
 				{
 					name: 'themes',
@@ -210,7 +259,9 @@ module.exports = class extends Generator {
 					message: 'Would you like to include client side templates?',
 					default: this.options.clientTpl,
 					store: true,
-					when: () => !this._skipQuestions && typeof this._passedInOptions.clientTpl !== 'boolean',
+					when: () =>
+						!this._skipQuestions &&
+						typeof this._passedInOptions.clientTpl !== 'boolean',
 				},
 				{
 					name: 'exampleCode',
@@ -218,31 +269,67 @@ module.exports = class extends Generator {
 					message: 'Would you like to include the example code?',
 					default: this.options.exampleCode,
 					store: true,
-					when: () => !this._skipQuestions && typeof this._passedInOptions.exampleCode !== 'boolean',
+					when: () =>
+						!this._skipQuestions &&
+						typeof this._passedInOptions.exampleCode !== 'boolean',
 				},
 				{
 					name: 'exporter',
 					type: 'confirm',
-					message: 'Would you like to include static exporting functionalities?',
+					message:
+						'Would you like to include static exporting functionalities?',
 					default: this.options.exporter,
 					store: true,
-					when: () => !this._skipQuestions && typeof this._passedInOptions.exporter !== 'boolean',
+					when: () =>
+						!this._skipQuestions &&
+						typeof this._passedInOptions.exporter !== 'boolean',
+				},
+				{
+					name: 'backend',
+					type: 'list',
+					message: 'What backend are you using?',
+					choices: this._backendOptions,
+					default: this.options.backend,
+					store: true,
+					when: () =>
+						!this._skipQuestions &&
+						!this._passedInOptions.backend,
 				},
 			]).then((answers) => {
 				this.options.name = answers.name || this.options.name;
-				this.options.templateEngine = answers.templateEngine || this.options.templateEngine;
-				this.options.jsCompiler = answers.jsCompiler || this.options.jsCompiler;
+				this.options.templateEngine =
+					answers.templateEngine || this.options.templateEngine;
+				this.options.jsCompiler =
+					answers.jsCompiler || this.options.jsCompiler;
 				this.options.viewExt = this.options.templateEngine;
-				this.options.themes = answers.themes !== undefined ? answers.themes : this.options.themes;
-				this.options.clientTpl = answers.clientTpl !== undefined ? answers.clientTpl : this.options.clientTpl;
+				this.options.themes =
+					answers.themes !== undefined
+						? answers.themes
+						: this.options.themes;
+				this.options.clientTpl =
+					answers.clientTpl !== undefined
+						? answers.clientTpl
+						: this.options.clientTpl;
 				this.options.exampleCode =
-					answers.exampleCode !== undefined ? answers.exampleCode : this.options.exampleCode;
-				this.options.exporter = answers.exporter !== undefined ? answers.exporter : this.options.exporter;
+					answers.exampleCode !== undefined
+						? answers.exampleCode
+						: this.options.exampleCode;
+				this.options.exporter =
+					answers.exporter !== undefined
+						? answers.exporter
+						: this.options.exporter;
+				this.options.backend =
+					answers.backend || this.options.backend;
 
 				this.options.name = _.kebabCase(this.options.name);
 
-				if (this.options.themes && this.options.templateEngine === 'twig') {
-					this.log('Sorry, theming only works with handlebars engine - so we set theming feature to false');
+				if (
+					this.options.themes &&
+					this.options.templateEngine === 'twig'
+				) {
+					this.log(
+						'Sorry, theming only works with handlebars engine - so we set theming feature to false'
+					);
 					this.options.themes = false;
 				}
 
@@ -253,6 +340,7 @@ module.exports = class extends Generator {
 				this.config.set('clientTemplates', this.options.clientTpl);
 				this.config.set('exampleCode', this.options.exampleCode);
 				this.config.set('exporter', this.options.exporter);
+				this.config.set('backend', this.options.backend);
 
 				this.config.save();
 			});
@@ -265,13 +353,19 @@ module.exports = class extends Generator {
 
 	upgradeProject() {
 		if (this._update) {
-			const pkgProject = JSON.parse(fs.readFileSync(this.destinationPath('package.json'), 'utf8'));
+			const pkgProject = JSON.parse(
+				fs.readFileSync(this.destinationPath('package.json'), 'utf8')
+			);
 
 			// uninstall outdated githooks in older projects
-			const huskyVersion = pkgProject.devDependencies ? pkgProject.devDependencies.husky : undefined;
+			const huskyVersion = pkgProject.devDependencies
+				? pkgProject.devDependencies.husky
+				: undefined;
 			if (huskyVersion && huskyVersion.startsWith('4.')) {
 				// eslint-disable-next-line no-unused-vars
-				const result = childProcess.execSync('npm uninstall husky').toString();
+				const result = childProcess
+					.execSync('npm uninstall husky')
+					.toString();
 				this.log('Outdated husky githooks successfully removed.');
 			}
 		}
@@ -280,7 +374,11 @@ module.exports = class extends Generator {
 	writing() {
 		this.log('Scaffolding your app');
 
-		const files = glob.sync('**/*', { cwd: this.sourceRoot(), nodir: true, dot: true });
+		const files = glob.sync('**/*', {
+			cwd: this.sourceRoot(),
+			nodir: true,
+			dot: true,
+		});
 
 		const tplFiles = [
 			// files to process with copyTpl
@@ -405,7 +503,7 @@ module.exports = class extends Generator {
 			'tests/cypress/cypress/integration/examples/',
 		];
 		const exampleIncludeAnyway = [
-			// example file "parts" included for this.options.exampleCode===false
+			// example file 'parts' included for this.options.exampleCode===false
 			'project/routes/_themes.js',
 			'project/routes/readme.md',
 			'src/patterns/readme.md',
@@ -416,6 +514,11 @@ module.exports = class extends Generator {
 			// files for this.options.exporter===true
 			'config/default/exporter.js',
 		];
+		const backendDrupalFiles = [
+			// files only for this.options.backend===drupal
+			'project/gulp/create-drupal-config.js',
+			'project/helpers/component.js',
+		];
 
 		const templateData = {
 			name: this.options.name,
@@ -424,7 +527,7 @@ module.exports = class extends Generator {
 			git: {
 				root: this._git.root,
 				project: this._git.project,
-			}
+			},
 		};
 
 		files.forEach((file) => {
@@ -474,7 +577,10 @@ module.exports = class extends Generator {
 			}
 
 			const ext = path.extname(file).substring(1);
-			const fileWithoutExt = file.substring(0, file.length - ext.length - 1);
+			const fileWithoutExt = file.substring(
+				0,
+				file.length - ext.length - 1
+			);
 			const sourcePath = this.templatePath(file);
 			let destinationPath = this.destinationPath(file);
 
@@ -486,13 +592,23 @@ module.exports = class extends Generator {
 				}
 				if (this.options.viewExt !== this.options.templateEngine) {
 					// sanity check for update case of old generated app's having viewExt other than hbs
-					const targetExt = `.${this.options.viewExt !== 0 ? this.options.viewExt : this._viewExtOptions[0]}`;
-					destinationPath = destinationPath.replace(path.extname(destinationPath), targetExt);
+					const targetExt = `.${
+						this.options.viewExt !== 0
+							? this.options.viewExt
+							: this._viewExtOptions[0]
+					}`;
+					destinationPath = destinationPath.replace(
+						path.extname(destinationPath),
+						targetExt
+					);
 				}
 			}
 
 			// check if it's a src file or a blueprints file
-			if (fileWithoutExt.indexOf('src/') !== -1 || fileWithoutExt.indexOf('project/blueprints/') !== -1) {
+			if (
+				fileWithoutExt.indexOf('src/') !== -1 ||
+				fileWithoutExt.indexOf('project/blueprints/') !== -1
+			) {
 				// check if it's a ts / js file
 				if (ext === 'ts' || ext === 'js') {
 					// return for ts / js files with ext not matching the current jsCompiler
@@ -502,13 +618,27 @@ module.exports = class extends Generator {
 				}
 			}
 
-			if (_.indexOf(jsCompilerJsFiles, file) !== -1 && this.options.jsCompiler === this._jsCompilerOptions[0]) {
+			if (
+				_.indexOf(jsCompilerJsFiles, file) !== -1 &&
+				this.options.jsCompiler === this._jsCompilerOptions[0]
+			) {
 				// return files only used with jsCompiler option js
 				return;
 			}
 
-			if (_.indexOf(jsCompilerTsFiles, file) !== -1 && this.options.jsCompiler === this._jsCompilerOptions[1]) {
+			if (
+				_.indexOf(jsCompilerTsFiles, file) !== -1 &&
+				this.options.jsCompiler === this._jsCompilerOptions[1]
+			) {
 				// return files only used with jsCompiler option ts
+				return;
+			}
+			
+			if (
+				_.indexOf(backendDrupalFiles, file) !== -1 &&
+				this.options.backend === this._backendOptions[0]
+			) {
+				// return files only used with drupal backend
 				return;
 			}
 
@@ -535,15 +665,13 @@ module.exports = class extends Generator {
 			{
 				do: this.options.exporter,
 				src: 'node_modules/@nitro/exporter/readme.md',
-				srcWeb:
-					'https://raw.githubusercontent.com/merkle-open/generator-nitro/master/packages/nitro-exporter/readme.md',
+				srcWeb: 'https://raw.githubusercontent.com/merkle-open/generator-nitro/master/packages/nitro-exporter/readme.md',
 				dest: 'project/docs/nitro-exporter.md',
 			},
 			{
 				do: true,
 				src: 'node_modules/@nitro/webpack/readme.md',
-				srcWeb:
-					'https://raw.githubusercontent.com/merkle-open/generator-nitro/master/packages/nitro-webpack/readme.md',
+				srcWeb: 'https://raw.githubusercontent.com/merkle-open/generator-nitro/master/packages/nitro-webpack/readme.md',
 				dest: 'project/docs/nitro-webpack.md',
 			},
 		];
@@ -552,10 +680,17 @@ module.exports = class extends Generator {
 				if (file.do) {
 					if (!this.options.skipInstall) {
 						// get readme from current package version
-						this.fs.copy(this.destinationPath(file.src), this.destinationPath(file.dest));
+						this.fs.copy(
+							this.destinationPath(file.src),
+							this.destinationPath(file.dest)
+						);
 					} else {
 						// get readme from github master branch
-						got.stream(file.srcWeb).pipe(fs.createWriteStream(this.destinationPath(file.dest)));
+						got.stream(file.srcWeb).pipe(
+							fs.createWriteStream(
+								this.destinationPath(file.dest)
+							)
+						);
 					}
 				}
 			});
@@ -564,9 +699,19 @@ module.exports = class extends Generator {
 		}
 
 		if (this._update) {
-			this.log(yosay(`All done – Check local changes and then\nrun \`npm install\` to update your project.`));
+			this.log(
+				yosay(
+					`All done – Check local changes and then\nrun \`npm install\` to update your project.`
+				)
+			);
 		} else {
-			this.log(yosay(`All done –\nrun \`npm start\` to start ${chalk.cyan('Nitro')} in development mode.`));
+			this.log(
+				yosay(
+					`All done –\nrun \`npm start\` to start ${chalk.cyan(
+						'Nitro'
+					)} in development mode.`
+				)
+			);
 		}
 	}
 };
